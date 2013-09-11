@@ -1,0 +1,316 @@
+From 24ad6275faad27b390ef45635efd10b0f63e60fc Mon Sep 17 00:00:00 2001
+From: Anton Lundin <anton@dohi.se>
+Date: Wed, 11 Sep 2013 23:22:55 +0200
+Subject: [PATCH] WIP: opensl-sink
+
+---
+ src/Makefile.am                  |   6 +
+ src/modules/module-opensl-sink.c | 265 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 271 insertions(+)
+ create mode 100644 src/modules/module-opensl-sink.c
+
+diff --git a/src/Makefile.am b/src/Makefile.am
+index 27477e9..60ed933 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -1100,6 +1100,7 @@ modlibexec_LTLIBRARIES += \
+ 		module-tunnel-sink-new.la \
+ 		module-tunnel-sink.la \
+ 		module-tunnel-source.la \
++		module-opensl-sink.la \
+ 		module-position-event-sounds.la \
+ 		module-augment-properties.la \
+ 		module-role-cork.la \
+@@ -1372,6 +1373,7 @@ SYMDEF_FILES = \
+ 		module-tunnel-sink-new-symdef.h \
+ 		module-tunnel-sink-symdef.h \
+ 		module-tunnel-source-symdef.h \
++		module-opensl-sink-symdef.h \
+ 		module-null-sink-symdef.h \
+ 		module-null-source-symdef.h \
+ 		module-sine-source-symdef.h \
+@@ -1653,6 +1655,10 @@ module_tunnel_source_la_SOURCES = modules/module-tunnel.c
+ module_tunnel_source_la_LDFLAGS = $(MODULE_LDFLAGS)
+ module_tunnel_source_la_LIBADD = $(MODULE_LIBADD)
+ 
++module_opensl_sink_la_SOURCES = modules/module-opensl-sink.c
++module_opensl_sink_la_LDFLAGS = $(MODULE_LDFLAGS)
++module_opensl_sink_la_LIBADD = $(MODULE_LIBADD) -lOpenSLES
++
+ module_loopback_la_SOURCES = modules/module-loopback.c
+ module_loopback_la_LDFLAGS = $(MODULE_LDFLAGS)
+ module_loopback_la_LIBADD = $(MODULE_LIBADD)
+diff --git a/src/modules/module-opensl-sink.c b/src/modules/module-opensl-sink.c
+new file mode 100644
+index 0000000..5754bd7
+--- /dev/null
++++ b/src/modules/module-opensl-sink.c
+@@ -0,0 +1,265 @@
++/***
++    This file is part of PulseAudio.
++
++    Copyright 2013 Anton Lundin
++
++    PulseAudio is free software; you can redistribute it and/or modify
++    it under the terms of the GNU Lesser General Public License as published
++    by the Free Software Foundation; either version 2.1 of the License,
++    or (at your option) any later version.
++
++    PulseAudio is distributed in the hope that it will be useful, but
++    WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++    General Public License for more details.
++
++    You should have received a copy of the GNU Lesser General Public License
++    along with PulseAudio; if not, write to the Free Software
++    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
++    USA.
++***/
++
++#ifdef HAVE_CONFIG_H
++#include <config.h>
++#endif
++
++#include <pulse/timeval.h>
++#include <pulse/xmalloc.h>
++#include <pulse/mainloop.h>
++#include <pulse/introspect.h>
++#include <pulse/error.h>
++
++#include <pulsecore/core.h>
++#include <pulsecore/core-util.h>
++#include <pulsecore/i18n.h>
++#include <pulsecore/sink.h>
++#include <pulsecore/modargs.h>
++#include <pulsecore/log.h>
++#include <pulsecore/thread.h>
++#include <pulsecore/thread-mq.h>
++#include <pulsecore/poll.h>
++#include <pulsecore/proplist-util.h>
++
++#include <android/log.h>
++#include <limits.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/time.h>
++
++#include <SLES/OpenSLES.h>
++
++#define LOGI(...) \
++	  __android_log_print(ANDROID_LOG_INFO, __FILE__, __VA_ARGS__)
++#define LOGW(...) \
++	  __android_log_print(ANDROID_LOG_WARN, __FILE__, __VA_ARGS__)
++
++#include "module-opensl-sink-symdef.h"
++
++PA_MODULE_AUTHOR("Anton Lundin");
++PA_MODULE_DESCRIPTION("Create a sink which outputs via opensl");
++PA_MODULE_VERSION(PACKAGE_VERSION);
++PA_MODULE_LOAD_ONCE(true);
++PA_MODULE_USAGE(
++        "sink_name=<name for the local sink> "
++        "sink_properties=<properties for the local sink> "
++        "format=<sample format> "
++        "channels=<number of channels> "
++        "rate=<sample rate> "
++        "channel_map=<channel map>"
++        );
++
++struct userdata {
++    pa_module *module;
++    pa_sink *sink;
++    pa_thread *thread;
++    pa_thread_mq thread_mq;
++    pa_mainloop *thread_mainloop;
++    pa_mainloop_api *thread_mainloop_api;
++
++    pa_context *context;
++	// SLEngine...
++};
++
++static const char* const valid_modargs[] = {
++    "sink_name",
++    "sink_properties",
++    "format",
++    "channels",
++    "rate",
++    "channel_map",
++    NULL,
++};
++
++
++static void thread_func(void *userdata) {
++    struct userdata *u = userdata;
++
++    pa_assert(u);
++
++    pa_log_debug("Thread starting up");
++
++    pa_thread_mq_install(&u->thread_mq);
++
++    for (;;) {
++        int ret;
++
++        if (pa_mainloop_iterate(u->thread_mainloop, 1, &ret) < 0) {
++            if (ret == 0)
++                goto finish;
++            else
++                goto fail;
++        }
++
++        if (PA_UNLIKELY(u->sink->thread_info.rewind_requested))
++            pa_sink_process_rewind(u->sink, 0);
++
++        if (PA_SINK_IS_LINKED(u->sink->thread_info.state)) {
++			size_t writable = 4;
++			pa_memchunk memchunk;
++			const void *p;
++
++			pa_sink_render_full(u->sink, writable, &memchunk);
++
++			pa_assert(memchunk.length > 0);
++
++			/* we have new data to write */
++			p = pa_memblock_acquire(memchunk.memblock);
++			/* TODO: Write DATA */
++			pa_log_debug("Should have written data...");
++			pa_memblock_release(memchunk.memblock);
++			pa_memblock_unref(memchunk.memblock);
++
++			if (ret != 0) {
++				pa_log_error("Could not write data into the stream ... ret = %i", ret);
++				u->thread_mainloop_api->quit(u->thread_mainloop_api, 1);
++			}
++        }
++    }
++fail:
++    /* If this was no regular exit from the loop we have to continue
++     * processing messages until we received PA_MESSAGE_SHUTDOWN */
++    pa_asyncmsgq_post(u->thread_mq.outq, PA_MSGOBJECT(u->module->core), PA_CORE_MESSAGE_UNLOAD_MODULE, u->module, 0, NULL, NULL);
++    pa_asyncmsgq_wait_for(u->thread_mq.inq, PA_MESSAGE_SHUTDOWN);
++
++finish:
++    pa_log_debug("Thread shutting down");
++}
++
++int pa__init(pa_module *m) {
++    struct userdata *u = NULL;
++    pa_modargs *ma = NULL;
++    pa_sink_new_data sink_data;
++    pa_sample_spec ss;
++    pa_channel_map map;
++    const char *sink_name = NULL;
++    char *default_sink_name = NULL;
++
++    pa_assert(m);
++
++    if (!(ma = pa_modargs_new(m->argument, valid_modargs))) {
++        pa_log("Failed to parse module arguments.");
++        goto fail;
++    }
++
++    ss = m->core->default_sample_spec;
++    map = m->core->default_channel_map;
++    if (pa_modargs_get_sample_spec_and_channel_map(ma, &ss, &map, PA_CHANNEL_MAP_DEFAULT) < 0) {
++        pa_log("Invalid sample format specification or channel map");
++        goto fail;
++    }
++
++    u = pa_xnew0(struct userdata, 1);
++    u->module = m;
++    m->userdata = u;
++    u->thread_mainloop = pa_mainloop_new();
++    if (u->thread_mainloop == NULL) {
++        pa_log("Failed to create mainloop");
++        goto fail;
++    }
++    u->thread_mainloop_api = pa_mainloop_get_api(u->thread_mainloop);
++
++    pa_thread_mq_init_thread_mainloop(&u->thread_mq, m->core->mainloop, u->thread_mainloop_api);
++
++    /* Create sink */
++    pa_sink_new_data_init(&sink_data);
++    sink_data.driver = __FILE__;
++    sink_data.module = m;
++
++    default_sink_name = pa_sprintf_malloc("opencl-sink");
++    sink_name = pa_modargs_get_value(ma, "sink_name", default_sink_name);
++
++    pa_sink_new_data_set_name(&sink_data, sink_name);
++    pa_sink_new_data_set_sample_spec(&sink_data, &ss);
++    pa_sink_new_data_set_channel_map(&sink_data, &map);
++
++    pa_proplist_sets(sink_data.proplist, PA_PROP_DEVICE_CLASS, "sound");
++    pa_proplist_setf(sink_data.proplist,
++                     PA_PROP_DEVICE_DESCRIPTION,
++                     _("Output via opensl"));
++
++    if (pa_modargs_get_proplist(ma, "sink_properties", sink_data.proplist, PA_UPDATE_REPLACE) < 0) {
++        pa_log("Invalid properties");
++        pa_sink_new_data_done(&sink_data);
++        goto fail;
++    }
++    if (!(u->sink = pa_sink_new(m->core, &sink_data, PA_SINK_NOFLAGS))) {
++        pa_log("Failed to create sink.");
++        pa_sink_new_data_done(&sink_data);
++        goto fail;
++    }
++
++    pa_sink_new_data_done(&sink_data);
++    u->sink->userdata = u;
++
++    /* set thread message queue */
++    pa_sink_set_asyncmsgq(u->sink, u->thread_mq.inq);
++
++    if (!(u->thread = pa_thread_new("opencl-sink", thread_func, u))) {
++        pa_log("Failed to create thread.");
++        goto fail;
++    }
++
++    pa_sink_put(u->sink);
++    pa_modargs_free(ma);
++    pa_xfree(default_sink_name);
++
++    return 0;
++
++fail:
++    if (ma)
++        pa_modargs_free(ma);
++
++    if (default_sink_name)
++        pa_xfree(default_sink_name);
++
++    pa__done(m);
++
++    return -1;
++}
++
++void pa__done(pa_module *m) {
++    struct userdata *u;
++
++    pa_assert(m);
++
++    if (!(u = m->userdata))
++        return;
++
++    if (u->sink)
++        pa_sink_unlink(u->sink);
++
++    if (u->thread) {
++        pa_asyncmsgq_send(u->thread_mq.inq, NULL, PA_MESSAGE_SHUTDOWN, NULL, 0, NULL);
++        pa_thread_free(u->thread);
++    }
++
++    pa_thread_mq_done(&u->thread_mq);
++
++    if (u->thread_mainloop)
++        pa_mainloop_free(u->thread_mainloop);
++
++    if (u->sink)
++        pa_sink_unref(u->sink);
++
++    pa_xfree(u);
++}
+-- 
+1.8.1.2
+

@@ -50,12 +50,12 @@ cd ..
 fi
 
 cd pulseaudio
-if git grep -q __ANDROID__ ; then
+if ! git grep -q __ANDROID__ ; then
 	git am ../patches/*
 fi
 env NOCONFIGURE=1 bash -x ./bootstrap.sh
 #./autogen.sh
-./configure --host=arm-linux-androideabi --prefix=${PREFIX} --enable-static --disable-rpath --disable-nls --disable-x11 --disable-oss-wrapper --disable-alsa --disable-esound --disable-waveout --disable-glib2 --disable-gtk3 --disable-gconf --disable-avahi --disable-jack --disable-asyncns --disable-tcpwrap --disable-lirc --disable-dbus --disable-bluez --disable-udev --disable-openssl --disable-xen --disable-systemd --disable-manpages
+./configure --host=arm-linux-androideabi --prefix=${PREFIX} --enable-static --disable-rpath --disable-nls --disable-x11 --disable-oss-wrapper --disable-alsa --disable-esound --disable-waveout --disable-glib2 --disable-gtk3 --disable-gconf --disable-avahi --disable-jack --disable-asyncns --disable-tcpwrap --disable-lirc --disable-dbus --disable-bluez --disable-udev --disable-openssl --disable-xen --disable-systemd --disable-manpages --disable-samplerate --without-speex --with-database=simple --disable-orc
 # --enable-static-bins
 make
 make install
