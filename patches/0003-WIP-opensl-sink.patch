@@ -1,7 +1,7 @@
-From 24ad6275faad27b390ef45635efd10b0f63e60fc Mon Sep 17 00:00:00 2001
-From: Anton Lundin <anton@dohi.se>
+From 4b9c0c38fbf2973eb825453751e7ae9ac62fbb4c Mon Sep 17 00:00:00 2001
+From: Anton Lundin <glance@acc.umu.se>
 Date: Wed, 11 Sep 2013 23:22:55 +0200
-Subject: [PATCH] WIP: opensl-sink
+Subject: [PATCH 3/3] WIP: opensl-sink
 
 ---
  src/Makefile.am                  |   6 +
@@ -10,28 +10,28 @@ Subject: [PATCH] WIP: opensl-sink
  create mode 100644 src/modules/module-opensl-sink.c
 
 diff --git a/src/Makefile.am b/src/Makefile.am
-index 27477e9..60ed933 100644
+index 8392953..1a4955d 100644
 --- a/src/Makefile.am
 +++ b/src/Makefile.am
-@@ -1100,6 +1100,7 @@ modlibexec_LTLIBRARIES += \
- 		module-tunnel-sink-new.la \
+@@ -1101,6 +1101,7 @@ modlibexec_LTLIBRARIES += \
+ 		module-tunnel-source-new.la \
  		module-tunnel-sink.la \
  		module-tunnel-source.la \
 +		module-opensl-sink.la \
  		module-position-event-sounds.la \
  		module-augment-properties.la \
  		module-role-cork.la \
-@@ -1372,6 +1373,7 @@ SYMDEF_FILES = \
- 		module-tunnel-sink-new-symdef.h \
+@@ -1374,6 +1375,7 @@ SYMDEF_FILES = \
+ 		module-tunnel-source-new-symdef.h \
  		module-tunnel-sink-symdef.h \
  		module-tunnel-source-symdef.h \
 +		module-opensl-sink-symdef.h \
  		module-null-sink-symdef.h \
  		module-null-source-symdef.h \
  		module-sine-source-symdef.h \
-@@ -1653,6 +1655,10 @@ module_tunnel_source_la_SOURCES = modules/module-tunnel.c
- module_tunnel_source_la_LDFLAGS = $(MODULE_LDFLAGS)
- module_tunnel_source_la_LIBADD = $(MODULE_LIBADD)
+@@ -1659,6 +1661,10 @@ module_tunnel_source_la_SOURCES = modules/module-tunnel.c
+ module_tunnel_source_la_LDFLAGS = $(MODULE_LDFLAGS) $(X11_CFLAGS)
+ module_tunnel_source_la_LIBADD = $(MODULE_LIBADD) $(X11_LIBS)
  
 +module_opensl_sink_la_SOURCES = modules/module-opensl-sink.c
 +module_opensl_sink_la_LDFLAGS = $(MODULE_LDFLAGS)

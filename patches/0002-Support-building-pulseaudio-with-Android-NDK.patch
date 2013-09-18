@@ -1,14 +1,14 @@
-From 9c33edc7b52b61fe720052cfd96df64c7da852f8 Mon Sep 17 00:00:00 2001
+From 9d2963564674e7d149ccceef05df22f77ee861c8 Mon Sep 17 00:00:00 2001
 From: Anton Lundin <glance@acc.umu.se>
 Date: Fri, 16 Aug 2013 17:06:36 +0200
-Subject: [PATCH 2/2] Support building pulseaudio with Android NDK
+Subject: [PATCH 2/3] Support building pulseaudio with Android NDK
 
+Signed-off-by: Anton Lundin <glance@acc.umu.se>
 ---
  src/daemon/main.c         | 2 +-
  src/pulsecore/core-util.c | 8 ++++----
- src/pulsecore/log.c       | 1 +
  src/pulsecore/rtkit.c     | 2 +-
- 4 files changed, 7 insertions(+), 6 deletions(-)
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/src/daemon/main.c b/src/daemon/main.c
 index 5b4e005..730c3a3 100644
@@ -63,18 +63,6 @@ index 19f1a83..04d3495 100644
      if (personality(PER_LINUX) < 0)
          pa_log_warn("Uh, personality() failed: %s", pa_cstrerror(errno));
  #endif
-diff --git a/src/pulsecore/log.c b/src/pulsecore/log.c
-index a25a760..5535045 100644
---- a/src/pulsecore/log.c
-+++ b/src/pulsecore/log.c
-@@ -30,6 +30,7 @@
- #include <string.h>
- #include <errno.h>
- #include <fcntl.h>
-+#include <sys/stat.h>
- 
- #ifdef HAVE_EXECINFO_H
- #include <execinfo.h>
 diff --git a/src/pulsecore/rtkit.c b/src/pulsecore/rtkit.c
 index d47610f..2b7eb6a 100644
 --- a/src/pulsecore/rtkit.c
