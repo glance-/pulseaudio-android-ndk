@@ -2,3 +2,6 @@
 libsndfile-*
 libtool-*
 ndk-*
+json-c-build
+pulseaudio-build
+libsndfile-build
