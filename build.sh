@@ -1,6 +1,6 @@
 set -e
 if [ ! -e ndk-arm ] ; then
-	 ../android-ndk-r9/build/tools/make-standalone-toolchain.sh --install-dir=ndk-arm --platform=android-14
+	 ../android-ndk-r9c/build/tools/make-standalone-toolchain.sh --install-dir=ndk-arm --platform=android-14
 fi
 export BUILDROOT=$PWD
 export PATH=${BUILDROOT}/ndk-arm/bin:$PATH
