@@ -1,12 +1,14 @@
 set -e
+export ANDROID_NDK_ROOT=$PWD/../android-ndk-r9c
 if [ ! -e ndk-arm ] ; then
-	 ../android-ndk-r9c/build/tools/make-standalone-toolchain.sh --install-dir=ndk-arm --platform=android-14
+	$ANDROID_NDK_ROOT/build/tools/make-standalone-toolchain.sh --install-dir=ndk-arm --platform=android-14
 fi
 export BUILDROOT=$PWD
 export PATH=${BUILDROOT}/ndk-arm/bin:$PATH
 export PREFIX=${BUILDROOT}/ndk-arm/sysroot/usr
 export PKG_CONFIG_PATH=${PREFIX}/lib/pkgconfig
 
+# Fetch external repos
 git submodule update
 git submodule foreach --recursive git checkout master
 
