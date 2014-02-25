@@ -59,9 +59,10 @@ if [ ! -e ./ndk-arm/sysroot/usr/lib/libltdl.a ] ; then
 fi
 
 pushd pulseaudio
-if ! git grep -q __ANDROID__ ; then
-	git am ../patches/*
-fi
+# disable patching for now..
+#if ! git grep -q __ANDROID__ ; then
+#	git am ../patches/*
+#fi
 env NOCONFIGURE=1 bash -x ./bootstrap.sh
 #./autogen.sh
 popd
