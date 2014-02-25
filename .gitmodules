@@ -4,3 +4,6 @@
 [submodule "json-c"]
 	path = json-c
 	url = git://github.com/json-c/json-c
+[submodule "libtool"]
+	path = libtool
+	url = git://git.savannah.gnu.org/libtool.git

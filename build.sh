@@ -12,6 +12,21 @@ export PKG_CONFIG_PATH=${PREFIX}/lib/pkgconfig
 git submodule update
 git submodule foreach --recursive git checkout master
 
+if [ ! -e ./ndk-arm/sysroot/usr/lib/libltdl.a ] ; then
+	pushd libtool
+	env HELP2MAN=/bin/true MAKEINFO=/bin/true ./bootstrap
+	popd
+	mkdir -p libtool-build
+	pushd libtool-build
+	../libtool/configure --host=arm-linux-androideabi --prefix=${PREFIX} HELP2MAN=/bin/true MAKEINFO=/bin/true
+	make
+	make install ||:
+	popd
+fi
+
+# Now, use updated libtool
+export LIBTOOLIZE=${PREFIX}/bin/libtoolize
+
 if [ ! -e $PKG_CONFIG_PATH/json-c.pc ] ; then
 	pushd json-c
 	./autogen.sh
@@ -40,21 +55,6 @@ if [ ! -e $PKG_CONFIG_PATH/sndfile.pc ] ; then
 	make ||:
 	make install ||:
 	cp sndfile.pc ${PREFIX}/lib/pkgconfig/
-	popd
-fi
-
-if [ ! -e libtool_2.4.2.orig.tar.gz ] ; then
-	wget http://ftp.de.debian.org/debian/pool/main/libt/libtool/libtool_2.4.2.orig.tar.gz
-fi
-if [ ! -e libtool-2.4.2 ] ; then
-	tar -zxf libtool_2.4.2.orig.tar.gz
-fi
-if [ ! -e ./ndk-arm/sysroot/usr/lib/libltdl.a ] ; then
-	mkdir -p libtool-build
-	pushd libtool-build
-	../libtool-2.4.2/configure --host=arm-linux-androideabi --prefix=${PREFIX}
-	make
-	make install
 	popd
 fi
 
