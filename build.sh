@@ -12,7 +12,7 @@ export PKG_CONFIG_PATH=${PREFIX}/lib/pkgconfig
 git submodule update
 git submodule foreach --recursive git checkout master
 
-if [ ! -e $PKG_CONFIG_PATH/json.pc ] ; then
+if [ ! -e $PKG_CONFIG_PATH/json-c.pc ] ; then
 	pushd json-c
 	./autogen.sh
 	popd
