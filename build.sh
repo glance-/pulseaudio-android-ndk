@@ -11,12 +11,12 @@ git submodule update
 git submodule foreach --recursive git checkout master
 
 if [ ! -e $PKG_CONFIG_PATH/json.pc ] ; then
-cd json-c
+pushd json-c
 ./autogen.sh
 ./configure --host=arm-linux-androideabi --prefix=${PREFIX}
 make
 make install
-cd ..
+popd
 fi
 
 if [ ! -e libsndfile-1.0.25.tar.gz ] ; then
@@ -26,13 +26,13 @@ if [ ! -e libsndfile-1.0.25 ] ; then
 	tar -zxf libsndfile-1.0.25.tar.gz
 fi
 if [ ! -e $PKG_CONFIG_PATH/sndfile.pc ] ; then
-cd libsndfile-1.0.25
+pushd libsndfile-1.0.25
 cp ../json-c/config.sub Cfg/
 ./configure --host=arm-linux-androideabi --prefix=${PREFIX} --disable-external-libs --disable-alsa --disable-sqlite
 make ||:
 make install ||:
 cp sndfile.pc ${PREFIX}/lib/pkgconfig/
-cd ..
+popd
 fi
 
 if [ ! -e libtool_2.4.2.orig.tar.gz ] ; then
@@ -42,14 +42,14 @@ if [ ! -e libtool-2.4.2 ] ; then
 tar -zxf libtool_2.4.2.orig.tar.gz
 fi
 if [ ! -e ./ndk-arm/sysroot/usr/lib/libltdl.a ] ; then
-cd libtool-2.4.2
+pushd libtool-2.4.2
 ./configure --host=arm-linux-androideabi --prefix=${PREFIX}
 make
 make install
-cd ..
+popd
 fi
 
-cd pulseaudio
+pushd pulseaudio
 if ! git grep -q __ANDROID__ ; then
 	git am ../patches/*
 fi
