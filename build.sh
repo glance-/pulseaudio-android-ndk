@@ -62,7 +62,7 @@ fi
 pushd pulseaudio
 # disable patching for now..
 #if ! git grep -q __ANDROID__ ; then
-#	git am ../patches/*
+#	git am ../pulseaudio-patches/*
 #fi
 env NOCONFIGURE=1 bash -x ./bootstrap.sh
 #./autogen.sh
