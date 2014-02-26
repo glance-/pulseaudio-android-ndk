@@ -1,0 +1,38 @@
+From 073aa08ddaccacb74b3ad0b44ef7a04b57307109 Mon Sep 17 00:00:00 2001
+From: Anton Lundin <anton@dohi.se>
+Date: Wed, 26 Feb 2014 09:21:24 +0100
+Subject: [PATCH 2/2] Add m4 directive and dir to ignore
+
+This is needed when for example reconfiguring with latest libtool
+---
+ .gitignore   | 1 +
+ configure.ac | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/.gitignore b/.gitignore
+index c2f6503..7d5f02f 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -24,6 +24,7 @@
+ /ltmain.sh
+ /Makefile
+ /Makefile.in
++/m4
+ /missing
+ /stamp-h1
+ /stamp-h2
+diff --git a/configure.ac b/configure.ac
+index 5c0a0e8..3ce2eb1 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -15,6 +15,7 @@ AC_PROG_MAKE_SET
+ AM_PROG_CC_C_O
+ AC_CONFIG_HEADER(config.h)
+ AC_CONFIG_HEADER(json_config.h)
++AC_CONFIG_MACRO_DIRS([m4])
+ AC_HEADER_STDC
+ AC_CHECK_HEADERS(fcntl.h limits.h strings.h syslog.h unistd.h [sys/cdefs.h] [sys/param.h] stdarg.h locale.h)
+ AC_CHECK_HEADER(inttypes.h,[AC_DEFINE([JSON_C_HAVE_INTTYPES_H],[1],[Public define for json_inttypes.h])])
+-- 
+1.8.3.2
+

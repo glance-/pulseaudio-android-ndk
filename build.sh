@@ -29,6 +29,7 @@ export LIBTOOLIZE=${PREFIX}/bin/libtoolize
 
 if [ ! -e $PKG_CONFIG_PATH/json-c.pc ] ; then
 	pushd json-c
+	git am ../json-c-patches/*
 	./autogen.sh
 	popd
 	mkdir -p json-c-build
