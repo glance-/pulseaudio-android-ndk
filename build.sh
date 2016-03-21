@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-export ANDROID_NDK_ROOT=$PWD/../android-ndk-r9d
+export ANDROID_NDK_ROOT=$PWD/../android-ndk-r10e
 
 # arm or x86
 export ARCH=${1-arm}
@@ -19,6 +19,7 @@ export PREFIX=${BUILDROOT}/ndk-$ARCH/sysroot/usr
 export PKG_CONFIG_PATH=${PREFIX}/lib/pkgconfig
 export CC=${BUILDCHAIN}-gcc
 export CXX=${BUILDCHAIN}-g++
+export ACLOCAL_PATH=${PREFIX}/share/aclocal
 
 # Fetch external repos
 if [ ! -e pulseaudio ] || [ ! -e json-c ] || [ ! -e libtool ] ; then
@@ -43,8 +44,7 @@ export LIBTOOLIZE=${PREFIX}/bin/libtoolize
 
 if [ ! -e $PKG_CONFIG_PATH/json-c.pc ] ; then
 	pushd json-c
-	autoreconf -i
-	aclocal --system-acdir=${PREFIX}/share/aclocal
+	./autogen.sh
 	popd
 	mkdir -p json-c-build
 	pushd json-c-build
@@ -54,19 +54,16 @@ if [ ! -e $PKG_CONFIG_PATH/json-c.pc ] ; then
 	popd
 fi
 
-if [ ! -e libsndfile-1.0.25.tar.gz ] ; then
-	wget http://www.mega-nerd.com/libsndfile/files/libsndfile-1.0.25.tar.gz
+if [ ! -e libsndfile-1.0.26.tar.gz ] ; then
+	wget http://www.mega-nerd.com/libsndfile/files/libsndfile-1.0.26.tar.gz
 fi
-if [ ! -e libsndfile-1.0.25 ] ; then
-	tar -zxf libsndfile-1.0.25.tar.gz
+if [ ! -e libsndfile-1.0.26 ] ; then
+	tar -zxf libsndfile-1.0.26.tar.gz
 fi
 if [ ! -e $PKG_CONFIG_PATH/sndfile.pc ] ; then
-	pushd libsndfile-1.0.25
-	cp ../json-c/config.sub Cfg/
-	popd
 	mkdir -p libsndfile-build
 	pushd libsndfile-build
-	../libsndfile-1.0.25/configure --host=${BUILDCHAIN} --prefix=${PREFIX} --disable-external-libs --disable-alsa --disable-sqlite
+	../libsndfile-1.0.26/configure --host=${BUILDCHAIN} --prefix=${PREFIX} --disable-external-libs --disable-alsa --disable-sqlite
 	make ||:
 	make install ||:
 	cp sndfile.pc ${PREFIX}/lib/pkgconfig/
