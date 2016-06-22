@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-export ANDROID_NDK_ROOT=$PWD/../android-ndk-r12
+export ANDROID_NDK_ROOT=${ANDROID_NDK_ROOT-$PWD/../android-ndk-r12}
 
 # arm or x86
 export ARCH=${1-arm}
