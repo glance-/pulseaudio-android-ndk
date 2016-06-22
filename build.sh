@@ -31,8 +31,8 @@ if [ ! -e ${PREFIX}/lib/libltdl.a ] ; then
 	pushd libtool
 	env HELP2MAN=/bin/true MAKEINFO=/bin/true ./bootstrap
 	popd
-	mkdir -p libtool-build
-	pushd libtool-build
+	mkdir -p libtool-build-$ARCH
+	pushd libtool-build-$ARCH
 	../libtool/configure --host=${BUILDCHAIN} --prefix=${PREFIX} HELP2MAN=/bin/true MAKEINFO=/bin/true
 	make
 	make install ||:
@@ -49,8 +49,8 @@ if [ ! -e libsndfile-1.0.26 ] ; then
 	tar -zxf libsndfile-1.0.26.tar.gz
 fi
 if [ ! -e $PKG_CONFIG_PATH/sndfile.pc ] ; then
-	mkdir -p libsndfile-build
-	pushd libsndfile-build
+	mkdir -p libsndfile-build-$ARCH
+	pushd libsndfile-build-$ARCH
 	../libsndfile-1.0.26/configure --host=${BUILDCHAIN} --prefix=${PREFIX} --disable-external-libs --disable-alsa --disable-sqlite
 	make ||:
 	make install ||:
@@ -67,8 +67,8 @@ env NOCONFIGURE=1 bash -x ./bootstrap.sh
 #./autogen.sh
 popd
 
-mkdir -p pulseaudio-build
-pushd pulseaudio-build
+mkdir -p pulseaudio-build-$ARCH
+pushd pulseaudio-build-$ARCH
 ../pulseaudio/configure --host=${BUILDCHAIN} --prefix=${PREFIX} --enable-static --disable-rpath --disable-nls --disable-x11 --disable-oss-wrapper --disable-alsa --disable-esound --disable-waveout --disable-glib2 --disable-gtk3 --disable-gconf --disable-avahi --disable-jack --disable-asyncns --disable-tcpwrap --disable-lirc --disable-dbus --disable-bluez4 --disable-bluez5 --disable-udev --disable-openssl --disable-xen --disable-systemd --disable-manpages --disable-samplerate --without-speex --with-database=simple --disable-orc --without-caps --without-fftw
 # --enable-static-bins
 make

@@ -1,6 +1,5 @@
 *.tar.gz
-libsndfile-*
-libtool-*
-ndk-*
-pulseaudio-build
-libsndfile-build
+libsndfile-*/
+libtool-*/
+ndk-*/
+*-build-*/
