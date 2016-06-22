@@ -23,8 +23,8 @@ export BUILDROOT=$PWD
 export PATH=${BUILDROOT}/ndk-$ARCH/bin:$PATH
 export PREFIX=${BUILDROOT}/ndk-$ARCH/sysroot/usr
 export PKG_CONFIG_PATH=${PREFIX}/lib/pkgconfig
-export CC=${BUILDCHAIN}-gcc
-export CXX=${BUILDCHAIN}-g++
+export CC=${BUILDCHAIN}-clang
+export CXX=${BUILDCHAIN}-clang++
 export CPPFLAGS="-Dposix_madvise=madvise -DPOSIX_MADV_WILLNEED=MADV_WILLNEED"
 export ACLOCAL_PATH=${PREFIX}/share/aclocal
 
