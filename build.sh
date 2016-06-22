@@ -7,11 +7,16 @@ export ARCH=${1-arm}
 
 if [ "$ARCH" = "arm" ] ; then
 	BUILDCHAIN=arm-linux-androideabi
-else if [ "$ARCH" = "x86" ] ; then
+elif [ "$ARCH" = "x86" ] ; then
 	BUILDCHAIN=i686-linux-android
-fi fi
+elif [ "$ARCH" = "x86_64" ] ; then
+	BUILDCHAIN=x86_64-linux-android
+	# Cross contaminated from host, so kill it
+	export ac_cv_func_posix_madvise=no
+fi
+
 if [ ! -e ndk-$ARCH ] ; then
-	$ANDROID_NDK_ROOT/build/tools/make-standalone-toolchain.sh --arch=$ARCH --install-dir=ndk-$ARCH --platform=android-14
+	$ANDROID_NDK_ROOT/build/tools/make-standalone-toolchain.sh --arch=$ARCH --install-dir=ndk-$ARCH --platform=android-24
 fi
 export BUILDROOT=$PWD
 export PATH=${BUILDROOT}/ndk-$ARCH/bin:$PATH
