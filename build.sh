@@ -22,7 +22,7 @@ export CXX=${BUILDCHAIN}-g++
 export ACLOCAL_PATH=${PREFIX}/share/aclocal
 
 # Fetch external repos
-if [ ! -e pulseaudio ] || [ ! -e json-c ] || [ ! -e libtool ] ; then
+if [ ! -e pulseaudio ] || [ ! -e libtool ] ; then
 	git submodule init
 	git submodule update
 fi
@@ -41,18 +41,6 @@ fi
 
 # Now, use updated libtool
 export LIBTOOLIZE=${PREFIX}/bin/libtoolize
-
-if [ ! -e $PKG_CONFIG_PATH/json-c.pc ] ; then
-	pushd json-c
-	./autogen.sh
-	popd
-	mkdir -p json-c-build
-	pushd json-c-build
-	../json-c/configure --host=${BUILDCHAIN} --prefix=${PREFIX}
-	make
-	make install
-	popd
-fi
 
 if [ ! -e libsndfile-1.0.26.tar.gz ] ; then
 	wget http://www.mega-nerd.com/libsndfile/files/libsndfile-1.0.26.tar.gz
