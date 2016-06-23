@@ -11,8 +11,6 @@ elif [ "$ARCH" = "x86" ] ; then
 	BUILDCHAIN=i686-linux-android
 elif [ "$ARCH" = "x86_64" ] ; then
 	BUILDCHAIN=x86_64-linux-android
-	# Cross contaminated from host, so kill it
-	export ac_cv_func_posix_madvise=no
 fi
 
 if [ ! -e ndk-$ARCH ] ; then
@@ -24,6 +22,7 @@ export PREFIX=${BUILDROOT}/ndk-$ARCH/sysroot/usr
 export PKG_CONFIG_PATH=${PREFIX}/lib/pkgconfig
 export CC=${BUILDCHAIN}-gcc
 export CXX=${BUILDCHAIN}-g++
+export CPPFLAGS="-Dposix_madvise=madvise -DPOSIX_MADV_WILLNEED=MADV_WILLNEED"
 export ACLOCAL_PATH=${PREFIX}/share/aclocal
 
 # Fetch external repos
