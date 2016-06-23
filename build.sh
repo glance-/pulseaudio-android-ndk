@@ -16,7 +16,7 @@ elif [ "$ARCH" = "x86_64" ] ; then
 fi
 
 if [ ! -e ndk-$ARCH ] ; then
-	$ANDROID_NDK_ROOT/build/tools/make-standalone-toolchain.sh --arch=$ARCH --install-dir=ndk-$ARCH --platform=android-24
+	$ANDROID_NDK_ROOT/build/tools/make_standalone_toolchain.py --arch=$ARCH --install-dir=ndk-$ARCH --api=24
 fi
 export BUILDROOT=$PWD
 export PATH=${BUILDROOT}/ndk-$ARCH/bin:$PATH
