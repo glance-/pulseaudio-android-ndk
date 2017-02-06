@@ -26,20 +26,23 @@ export CPPFLAGS="-Dposix_madvise=madvise -DPOSIX_MADV_WILLNEED=MADV_WILLNEED"
 export ACLOCAL_PATH=${PREFIX}/share/aclocal
 
 # Fetch external repos
-if [ ! -e pulseaudio ] || [ ! -e libtool ] ; then
+if [ ! -e pulseaudio ] ; then
 	git submodule init
 	git submodule update
 fi
 
+if [ ! -e libtool-2.4.6.tar.gz ] ; then
+	wget http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz
+fi
+if [ ! -e libtool-2.4.6 ] ; then
+	tar -zxf libtool-2.4.6.tar.gz
+fi
 if [ ! -e ${PREFIX}/lib/libltdl.a ] ; then
-	pushd libtool
-	env HELP2MAN=/bin/true MAKEINFO=/bin/true ./bootstrap
-	popd
 	mkdir -p libtool-build-$ARCH
 	pushd libtool-build-$ARCH
-	../libtool/configure --host=${BUILDCHAIN} --prefix=${PREFIX} HELP2MAN=/bin/true MAKEINFO=/bin/true
+	../libtool-2.4.6/configure --host=${BUILDCHAIN} --prefix=${PREFIX} HELP2MAN=/bin/true MAKEINFO=/bin/true
 	make
-	make install ||:
+	make install
 	popd
 fi
 
