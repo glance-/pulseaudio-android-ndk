@@ -3,6 +3,8 @@ notifications:
         recipients:
             - glance@acc.umu.se
 
+sudo: false
+
 os:
     - linux
 
