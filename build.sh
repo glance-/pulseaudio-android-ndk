@@ -29,7 +29,7 @@ export CPPFLAGS="-Dposix_madvise=madvise -DPOSIX_MADV_WILLNEED=MADV_WILLNEED"
 export ACLOCAL_PATH=${PREFIX}/share/aclocal
 
 # Fetch external repos
-if [ ! -e pulseaudio ] ; then
+if [ ! -e pulseaudio/bootstrap.sh ] ; then
 	git submodule init
 	git submodule update
 fi
