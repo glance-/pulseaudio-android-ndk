@@ -16,8 +16,8 @@ fi
 LIBTOOL_VERSION=2.4.6
 LIBSNDFILE_VERSION=1.0.27
 
-if [ ! -e ndk-$ARCH ] ; then
-	$ANDROID_NDK_ROOT/build/tools/make_standalone_toolchain.py --arch=$ARCH --install-dir=ndk-$ARCH --api=24
+if [ ! -e "ndk-$ARCH" ] ; then
+	"$ANDROID_NDK_ROOT"/build/tools/make_standalone_toolchain.py --arch="$ARCH" --install-dir="ndk-$ARCH" --api=24
 fi
 export BUILDROOT=$PWD
 export PATH=${BUILDROOT}/ndk-$ARCH/bin:$PATH
@@ -40,10 +40,10 @@ fi
 if [ ! -e libtool-$LIBTOOL_VERSION ] ; then
 	tar -zxf libtool-$LIBTOOL_VERSION.tar.gz
 fi
-if [ ! -e ${PREFIX}/lib/libltdl.a ] ; then
-	mkdir -p libtool-build-$ARCH
-	pushd libtool-build-$ARCH
-	../libtool-$LIBTOOL_VERSION/configure --host=${BUILDCHAIN} --prefix=${PREFIX} HELP2MAN=/bin/true MAKEINFO=/bin/true
+if [ ! -e "${PREFIX}/lib/libltdl.a" ] ; then
+	mkdir -p "libtool-build-$ARCH"
+	pushd "libtool-build-$ARCH"
+	../libtool-$LIBTOOL_VERSION/configure --host=${BUILDCHAIN} --prefix="${PREFIX}" HELP2MAN=/bin/true MAKEINFO=/bin/true
 	make
 	make install
 	popd
@@ -58,10 +58,10 @@ fi
 if [ ! -e libsndfile-$LIBSNDFILE_VERSION ] ; then
 	tar -zxf libsndfile-$LIBSNDFILE_VERSION.tar.gz
 fi
-if [ ! -e $PKG_CONFIG_PATH/sndfile.pc ] ; then
-	mkdir -p libsndfile-build-$ARCH
-	pushd libsndfile-build-$ARCH
-	../libsndfile-$LIBSNDFILE_VERSION/configure --host=${BUILDCHAIN} --prefix=${PREFIX} --disable-external-libs --disable-alsa --disable-sqlite
+if [ ! -e "$PKG_CONFIG_PATH/sndfile.pc" ] ; then
+	mkdir -p "libsndfile-build-$ARCH"
+	pushd "libsndfile-build-$ARCH"
+	../libsndfile-$LIBSNDFILE_VERSION/configure --host=${BUILDCHAIN} --prefix="${PREFIX}" --disable-external-libs --disable-alsa --disable-sqlite
 	# Hack out examples, which doesn't build
 	perl -pi -e 's/ examples / /g' Makefile
 	make
@@ -78,9 +78,9 @@ env NOCONFIGURE=1 bash -x ./bootstrap.sh
 #./autogen.sh
 popd
 
-mkdir -p pulseaudio-build-$ARCH
-pushd pulseaudio-build-$ARCH
-../pulseaudio/configure --host=${BUILDCHAIN} --prefix=${PREFIX} --enable-static --disable-rpath --disable-nls --disable-x11 --disable-oss-wrapper --disable-alsa --disable-esound --disable-waveout --disable-glib2 --disable-gtk3 --disable-gconf --disable-avahi --disable-jack --disable-asyncns --disable-tcpwrap --disable-lirc --disable-dbus --disable-bluez4 --disable-bluez5 --disable-udev --disable-openssl --disable-xen --disable-systemd --disable-manpages --disable-samplerate --without-speex --with-database=simple --disable-orc --without-caps --without-fftw --disable-systemd-daemon --disable-systemd-login --disable-systemd-journal --disable-webrtc-aec --disable-tests
+mkdir -p "pulseaudio-build-$ARCH"
+pushd "pulseaudio-build-$ARCH"
+../pulseaudio/configure --host=${BUILDCHAIN} --prefix="${PREFIX}" --enable-static --disable-rpath --disable-nls --disable-x11 --disable-oss-wrapper --disable-alsa --disable-esound --disable-waveout --disable-glib2 --disable-gtk3 --disable-gconf --disable-avahi --disable-jack --disable-asyncns --disable-tcpwrap --disable-lirc --disable-dbus --disable-bluez4 --disable-bluez5 --disable-udev --disable-openssl --disable-xen --disable-systemd --disable-manpages --disable-samplerate --without-speex --with-database=simple --disable-orc --without-caps --without-fftw --disable-systemd-daemon --disable-systemd-login --disable-systemd-journal --disable-webrtc-aec --disable-tests
 # --enable-static-bins
 make
 make install
