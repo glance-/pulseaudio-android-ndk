@@ -14,7 +14,7 @@ elif [ "$ARCH" = "x86_64" ] ; then
 fi
 
 LIBTOOL_VERSION=2.4.6
-LIBSNDFILE_VERSION=1.0.26
+LIBSNDFILE_VERSION=1.0.27
 
 if [ ! -e ndk-$ARCH ] ; then
 	$ANDROID_NDK_ROOT/build/tools/make_standalone_toolchain.py --arch=$ARCH --install-dir=ndk-$ARCH --api=24
@@ -62,9 +62,10 @@ if [ ! -e $PKG_CONFIG_PATH/sndfile.pc ] ; then
 	mkdir -p libsndfile-build-$ARCH
 	pushd libsndfile-build-$ARCH
 	../libsndfile-$LIBSNDFILE_VERSION/configure --host=${BUILDCHAIN} --prefix=${PREFIX} --disable-external-libs --disable-alsa --disable-sqlite
-	make ||:
-	make install ||:
-	cp sndfile.pc ${PREFIX}/lib/pkgconfig/
+	# Hack out examples, which doesn't build
+	perl -pi -e 's/ examples / /g' Makefile
+	make
+	make install
 	popd
 fi
 
