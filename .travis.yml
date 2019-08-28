@@ -12,7 +12,7 @@ language: c
 
 cache:
     directories:
-        - android-ndk-r13b
+        - android-ndk-r20
 
 addons:
     apt:
@@ -26,11 +26,11 @@ env:
     - TARGET="x86_64"
 
 before_install:
-    - if [ ! -e android-ndk-r13b/toolchains ] ; then
-        curl -Lk http://dl.google.com/android/repository/android-ndk-r13b-linux-x86_64.zip -o android-ndk.zip ;
+    - if [ ! -e android-ndk-r20/toolchains ] ; then
+        curl -Lk https://dl.google.com/android/repository/android-ndk-r20-linux-x86_64.zip -o android-ndk.zip ;
         unzip -q android-ndk.zip ;
       fi
-    - export ANDROID_NDK_ROOT=$PWD/android-ndk-r13b
+    - export ANDROID_NDK_ROOT=$PWD/android-ndk-r20
 
 script:
     bash build.sh $TARGET
