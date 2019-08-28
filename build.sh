@@ -70,7 +70,7 @@ if [ ! -e "$PKG_CONFIG_PATH/sndfile.pc" ] ; then
 fi
 
 pushd pulseaudio
-if ! git grep -q opensl ; then
+if ! git grep -q SLES; then
 	git am ../pulseaudio-patches/*
 fi
 env NOCONFIGURE=1 bash -x ./bootstrap.sh
