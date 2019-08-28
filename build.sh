@@ -7,6 +7,8 @@ export ARCH=${1-arm}
 
 if [ "$ARCH" = "arm" ] ; then
 	BUILDCHAIN=arm-linux-androideabi
+elif [ "$ARCH" = "arm64" ] ; then
+	BUILDCHAIN=aarch64-linux-android
 elif [ "$ARCH" = "x86" ] ; then
 	BUILDCHAIN=i686-linux-android
 elif [ "$ARCH" = "x86_64" ] ; then

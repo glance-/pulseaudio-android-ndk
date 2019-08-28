@@ -22,6 +22,7 @@ addons:
 
 env:
     - TARGET="arm"
+    - TARGET="arm64"
     - TARGET="x86"
     - TARGET="x86_64"
 
